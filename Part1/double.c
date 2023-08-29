@@ -9,7 +9,7 @@ int numlen(unsigned long long val)
 	int ans = 0;
 	while(val > 0){
 		ans++;
-		val /= 10;
+		val /= 10; 
 	}
 	if(ans == 0) ans++;
 	return ans;
