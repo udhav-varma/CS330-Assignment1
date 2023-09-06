@@ -21,7 +21,7 @@ int main(int argc, char* argv[])
 	while(*num != '\0'){
 		if(*num < '0' || *num > '9'){
 			perror("Unable to execute");
-			exit(1);
+			exit(-1);
 		}
 		num = num + 1;
 	}

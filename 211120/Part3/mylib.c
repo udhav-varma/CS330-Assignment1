@@ -12,8 +12,8 @@ void *memalloc(unsigned long size)
 {
 	printf("memalloc() called\n");
 	size += 8;
-	size = 8*((size + 7)/8);
-	if(size < 24) size = 24;
+	size = 8*((size + 7)/8);	// Next multiple of 8
+	if(size < 24) size = 24;	// Necessary that every block is atleast 24
 	unsigned long * ptr = head;
 	while(ptr != NULL){
 		unsigned long freespace = *(ptr);
