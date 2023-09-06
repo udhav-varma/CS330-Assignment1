@@ -8,8 +8,15 @@
 
 unsigned long findsize(char* path)
 {
-	unsigned long ans = 4096;
+	// fprintf(stderr, "at %s\n", path);
+	unsigned long ans = 0;
 	struct stat buf;
+	int code = stat(path, &buf);
+	if(code == -1){
+		perror("stat fail at line 73");
+		exit(-1);
+	}
+	ans += buf.st_size;
 	DIR * fobj = opendir(path);
 	struct dirent * obj = readdir(fobj);
 	while(obj != NULL){
@@ -55,6 +62,7 @@ unsigned long findsize(char* path)
 		}
 		obj = readdir(fobj);
 	}
+	return ans;
 }
 
 int main(int argc, char* argv[])
@@ -66,9 +74,19 @@ int main(int argc, char* argv[])
 	char filename[5000] = "./", originalName[5000];
 	strcat(filename, argv[1]);
 	strcpy(originalName, argv[1]);
-	unsigned long long ans = 4096;
-	// fprintf(stderr, "execute %s\n", argv[1]);
+	if(argc == 3){
+		printf("%ld\n", findsize(filename));
+		exit(0);
+	}
 	struct stat buf;
+	unsigned long long ans = 0;
+	int code = stat(filename, &buf);
+	if(code == -1){
+		perror("stat fail at line 73");
+		exit(-1);
+	}
+	ans += buf.st_size;
+	// fprintf(stderr, "execute %s\n", argv[1]);
 	DIR * fobj = opendir(filename);
 	struct dirent* obj = readdir(fobj);
 	while(obj != NULL){
@@ -82,28 +100,28 @@ int main(int argc, char* argv[])
 			strcpy(cfile, originalName);
 			strcat(cfile, "/");
 			strcat(cfile, obj->d_name);
-			ans += findsize(cfile);
-			// // fprintf(stderr, "Folder: %s\n", cfile);
-			// int filed[2];
-			// int code = pipe(filed);
-			// if(code == -1){
-			// 	perror("Pipe fail\n");
-			// 	exit(EXIT_FAILURE);
-			// }
-			// int pid = fork();
-			// if(pid < 0){
-			// 	perror("Fork failed\n");
-			// 	exit(EXIT_FAILURE);
-			// }
-			// if(pid == 0){
-			// 	dup2(filed[1], STDOUT_FILENO);
-			// 	execl("./myDU", "myDU", cfile, NULL);	
-			// }
-			// else{
-			// 	char filesize[15];
-			// 	read(filed[0], filesize, 12);
-			// 	ans += atoll(filesize);
-			// }
+			// ans += findsize(cfile);
+			// fprintf(stderr, "Folder: %s\n", cfile);
+			int filed[2];
+			int code = pipe(filed);
+			if(code == -1){
+				perror("Pipe fail\n");
+				exit(EXIT_FAILURE);
+			}
+			int pid = fork();
+			if(pid < 0){
+				perror("Fork failed\n");
+				exit(EXIT_FAILURE);
+			}
+			if(pid == 0){
+				dup2(filed[1], STDOUT_FILENO);
+				execl("./myDU", "myDU", cfile, "child", NULL);	
+			}
+			else{
+				char filesize[15];
+				read(filed[0], filesize, 12);
+				ans += atoll(filesize);
+			}
 		}
 		else if(obj->d_type == DT_REG){
 			char nbuf[5000];

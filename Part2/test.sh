@@ -5,7 +5,7 @@ calculated_size=0
 
 find_actual_size()
 {
-	output=$(du -bs $1)
+	output=$(du -bsL $1)
 	actual_size=$(echo $output | cut -d ' ' -f 1)
 }
 
@@ -25,6 +25,19 @@ if [ $? -ne "0" ]
 then
 	echo "myDU.c: compilation failed"
 	exit -1
+fi
+
+#mytest
+find_actual_size mytest
+find_calculated_size mytest
+echo "Expected output: $actual_size"
+echo "Your output: $calculated_size"
+
+if [ $actual_size != "$calculated_size" ]
+then
+	echo "mytest failed"
+else
+	echo "mytest passed"
 fi
 
 #Testcase 1
